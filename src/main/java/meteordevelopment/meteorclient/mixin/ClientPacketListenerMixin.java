@@ -5,6 +5,7 @@
 
 package meteordevelopment.meteorclient.mixin;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
@@ -28,9 +29,14 @@ import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.movement.Velocity;
 import meteordevelopment.meteorclient.systems.modules.player.NoRotate;
+import meteordevelopment.meteorclient.systems.modules.player.Portals;
 import meteordevelopment.meteorclient.systems.modules.render.NoRender;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -43,6 +49,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -54,6 +61,23 @@ public abstract class ClientPacketListenerMixin extends ClientCommonPacketListen
 
     protected ClientPacketListenerMixin(Minecraft client, Connection connection, CommonListenerCookie connectionState) {
         super(client, connection, connectionState);
+    }
+
+    @Unique
+    private boolean meteor$keepChatOpen(LevelLoadingScreen.Reason reason) {
+        return reason == LevelLoadingScreen.Reason.NETHER_PORTAL
+            && Modules.get().isActive(Portals.class)
+            && minecraft.gui.screen() instanceof ChatScreen;
+    }
+
+    @WrapWithCondition(method = "startWaitingForNewLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ChatComponent;preserveCurrentChatScreen()V"))
+    private boolean preserveChatScreen(ChatComponent chat, @Local(argsOnly = true) LevelLoadingScreen.Reason reason) {
+        return !meteor$keepChatOpen(reason);
+    }
+
+    @WrapWithCondition(method = "startWaitingForNewLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setScreenAndShow(Lnet/minecraft/client/gui/screens/Screen;)V"))
+    private boolean showLevelLoadingScreen(Minecraft minecraft, Screen screen, @Local(argsOnly = true) LevelLoadingScreen.Reason reason) {
+        return !meteor$keepChatOpen(reason);
     }
 
     @Inject(method = "handleAddEntity", at = @At("HEAD"), cancellable = true)
