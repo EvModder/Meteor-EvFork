@@ -67,6 +67,9 @@ public abstract class GameRendererMixin {
     @Unique
     private final PoseStack matrices = new PoseStack();
 
+    @Unique
+    private final PoseStack matricesNoBob = new PoseStack();
+
     @Shadow
     protected abstract void bobView(final CameraRenderState cameraState, final PoseStack poseStack);
 
@@ -90,7 +93,7 @@ public abstract class GameRendererMixin {
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=hand"))
-    private void onRenderLevel(DeltaTracker deltaTracker, CallbackInfo ci, @Local(name = "projectionMatrix") Matrix4f projectionMatrix, @Local(name = "modelViewMatrix") Matrix4fc modelViewMatrix, @Local(name = "worldPartialTicks") float worldPartialTicks, @Local(name = "bobStack") PoseStack bobStack) {
+    private void onRenderLevel(DeltaTracker deltaTracker, CallbackInfo ci, @Local(name = "projectionMatrix") Matrix4f projectionMatrix, @Local(name = "modelViewMatrix") Matrix4fc modelViewMatrix, @Local(name = "worldPartialTicks") float worldPartialTicks) {
         if (!Utils.canUpdate()) return;
 
         Profiler.get().push(MeteorClient.MOD_ID + "_render");
@@ -101,8 +104,6 @@ public abstract class GameRendererMixin {
             renderer = new Renderer3D(MeteorRenderPipelines.WORLD_COLORED_LINES, MeteorRenderPipelines.WORLD_COLORED);
         if (depthRenderer == null)
             depthRenderer = new Renderer3D(MeteorRenderPipelines.WORLD_COLORED_LINES_DEPTH, MeteorRenderPipelines.WORLD_COLORED_DEPTH);
-        Render3DEvent event = Render3DEvent.get(bobStack, renderer, depthRenderer, worldPartialTicks, mainCamera.position().x, mainCamera.position().y, mainCamera.position().z);
-
         // Update model view matrix
 
         RenderSystem.getModelViewStack().pushMatrix().mul(modelViewMatrix);
@@ -115,21 +116,29 @@ public abstract class GameRendererMixin {
 
         Matrix4f inverseBob = new Matrix4f(matrices.last().pose()).invert();
         RenderSystem.getModelViewStack().mul(inverseBob);
-        matrices.popPose();
+
+        matricesNoBob.pushPose();
+        bobHurt(this.gameRenderState.levelRenderState.cameraRenderState, matricesNoBob);
+        Matrix4f inverseHurt = new Matrix4f(matricesNoBob.last().pose()).invert();
 
         // Call utility classes (apply bob correction when Iris shaders are active)
 
-        Matrix4fc correctedPosition = MixinPlugin.isIrisPresent && RenderUtils.isShaderPackInUse() ? new Matrix4f(modelViewMatrix).mul(inverseBob) : modelViewMatrix;
+        Matrix4fc correctedPosition = MixinPlugin.isIrisPresent && RenderUtils.isShaderPackInUse() ? new Matrix4f(modelViewMatrix).mul(inverseHurt) : modelViewMatrix;
         RenderUtils.updateScreenCenter(projectionMatrix, correctedPosition);
         NametagUtils.onRender(modelViewMatrix);
 
         // Render
 
+        Render3DEvent event = Render3DEvent.get(matrices, matricesNoBob, renderer, depthRenderer, worldPartialTicks, mainCamera.position().x, mainCamera.position().y, mainCamera.position().z);
+
         renderer.begin();
         depthRenderer.begin();
         MeteorClient.EVENT_BUS.post(event);
-        renderer.render(bobStack);
-        depthRenderer.render(bobStack);
+        renderer.render(matrices);
+        depthRenderer.render(matrices);
+
+        matrices.popPose();
+        matricesNoBob.popPose();
 
         // Revert model view matrix
 
