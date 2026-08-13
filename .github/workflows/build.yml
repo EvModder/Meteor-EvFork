@@ -1,13 +1,11 @@
 name: Build
 
-concurrency:
-  group: "build"
-  cancel-in-progress: false
-
 on:
   push:
-    branches:
-      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -25,42 +23,60 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '25'
-
-      - name: Set up Node JS
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-
-      - name: Get current build number
-        id: build-number
-        run: |
-          cd .github/builds
-          npm install
-          npm run --silent get_number >> $GITHUB_OUTPUT
+          distribution: temurin
+          java-version: 25
 
       - name: Build
-        run: ./gradlew build -Pcommit=${{ github.sha }} -Pbuild_number=${{ steps.build-number.outputs.number }}
+        run: ./gradlew build -Pcommit="$GITHUB_SHA" -Pbuild_number="$GITHUB_RUN_NUMBER"
 
-      - name: Webhook Failure
-        if: ${{ failure() }}
+      - name: Prepare artifacts
+        id: artifacts
+        shell: bash
         run: |
-          cd .github/builds
-          npm run webhook -- ${{ steps.build-number.outputs.number }} ${{ github.ref_name }} https://api.github.com/repos/MeteorDevelopment/meteor-client/compare/${{ github.event.before }}...${{ github.event.after }} false
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          jar_path="$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)"
+          if [[ -z "$jar_path" ]]; then
+            echo "No distributable jar found in build/libs" >&2
+            exit 1
+          fi
 
-      - name: Publish
-        run: ./gradlew publish -Pcommit=${{ github.sha }} -Pbuild_number=${{ steps.build-number.outputs.number }}
-        env:
-          MAVEN_METEOR_ALIAS: ${{ secrets.MAVEN_METEOR_ALIAS }}
-          MAVEN_METEOR_TOKEN: ${{ secrets.MAVEN_METEOR_TOKEN }}
+          mkdir -p work_files/release
+          cp "$jar_path" work_files/release/meteor-client-latest.jar
+          sha256sum work_files/release/meteor-client-latest.jar > work_files/release/meteor-client-latest.jar.sha256
+          echo "jar_path=$jar_path" >> "$GITHUB_OUTPUT"
 
-      - name: Discord webhook
+      - name: Upload commit artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: meteor-client-${{ github.sha }}
+          path: ${{ steps.artifacts.outputs.jar_path }}
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+      - name: Update latest release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          cd .github/builds
-          npm run webhook -- ${{ steps.build-number.outputs.number }} ${{ github.ref_name }} https://api.github.com/repos/MeteorDevelopment/meteor-client/compare/${{ github.event.before }}...${{ github.event.after }} true
-        env:
-          SERVER_TOKEN: ${{ secrets.SERVER_TOKEN }}
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          notes="Automated build from commit \`${GITHUB_SHA}\` on branch \`${GITHUB_REF_NAME}\`."
+
+          if gh release view latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/latest" \
+              -f sha="$GITHUB_SHA" \
+              -F force=true
+            gh release edit latest \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Latest Meteor Client build" \
+              --notes "$notes" \
+              --prerelease
+            gh release upload latest work_files/release/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber
+          else
+            gh release create latest work_files/release/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "Latest Meteor Client build" \
+              --notes "$notes" \
+              --prerelease
+          fi

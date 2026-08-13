@@ -29,3 +29,4 @@ jobs:
         with:
           name: pull-request-build
           path: build/libs/
+          retention-days: 90
