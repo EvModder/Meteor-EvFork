@@ -66,15 +66,9 @@ jobs:
               -F force=true
             gh release edit latest \
               --repo "$GITHUB_REPOSITORY" \
-              --title "Latest EvFork Meteor build" \
+              --title "Latest Meteor EvFork build" \
               --notes "$notes" \
               --prerelease
-            gh release delete-asset latest meteor-client-latest.jar \
-              --repo "$GITHUB_REPOSITORY" \
-              --yes 2>/dev/null || true
-            gh release delete-asset latest meteor-client-latest.jar.sha256 \
-              --repo "$GITHUB_REPOSITORY" \
-              --yes 2>/dev/null || true
             gh release upload latest work_files/release/* \
               --repo "$GITHUB_REPOSITORY" \
               --clobber
@@ -82,7 +76,7 @@ jobs:
             gh release create latest work_files/release/* \
               --repo "$GITHUB_REPOSITORY" \
               --target "$GITHUB_SHA" \
-              --title "Latest EvFork Meteor build" \
+              --title "Latest Meteor EvFork build" \
               --notes "$notes" \
               --prerelease
           fi
