@@ -38,7 +38,6 @@ import org.joml.Vector4f;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -152,11 +151,6 @@ public abstract class LevelRendererMixin implements ILevelRenderer {
 
     @Shadow
     @Final
-    @Mutable
-    private RenderTarget entityOutlineTarget;
-
-    @Shadow
-    @Final
     private LevelTargetBundle targets;
 
     @Shadow
@@ -166,29 +160,21 @@ public abstract class LevelRendererMixin implements ILevelRenderer {
     @Final
     private RenderBuffers renderBuffers;
     @Unique
-    private Stack<RenderTarget> framebufferStack;
-
-    @Unique
     private Stack<ResourceHandle<RenderTarget>> framebufferHandleStack;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void init$IWorldRenderer(CallbackInfo ci) {
-        framebufferStack = new ObjectArrayList<>();
         framebufferHandleStack = new ObjectArrayList<>();
     }
 
     @Override
     public void meteor$pushEntityOutlineFramebuffer(RenderTarget framebuffer) {
-        framebufferStack.push(this.entityOutlineTarget);
-        this.entityOutlineTarget = framebuffer;
-
         framebufferHandleStack.push(this.targets.entityOutline);
         this.targets.entityOutline = () -> framebuffer;
     }
 
     @Override
     public void meteor$popEntityOutlineFramebuffer() {
-        this.entityOutlineTarget = framebufferStack.pop();
         this.targets.entityOutline = framebufferHandleStack.pop();
     }
 }

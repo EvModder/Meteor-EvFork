@@ -14,4 +14,8 @@ A fork of [meteor-client](https://github.com/MeteorDevelopment/meteor-client) fo
 
 ## [↓ Download latest jar](https://github.com/EvModder/Meteor-EvFork/releases/download/latest/meteor-evfork-latest.jar)
 
+## Changes in this fork
+
+- **Rendering stability:** Fixes an entity-outline rendering crash.
+
 Meteor maintainers: Feel free to DM me if you would like anything from here submitted upstream as a PR.
