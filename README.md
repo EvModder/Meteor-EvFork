@@ -16,7 +16,7 @@
     <img src="https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/MeteorDevelopment/meteor-client/badge?filter=.java$&label=lines%20of%20code&color=blue" alt="GitHub lines of code"/>
 </div>
 
-## [Latest jar](https://github.com/EvModder/meteor-client/releases/download/latest/meteor-client-latest.jar)
+## [↓ Download latest jar](https://github.com/EvModder/Meteor-EvFork/releases/download/latest/meteor-evfork-latest.jar)
 
 ## Changes
 

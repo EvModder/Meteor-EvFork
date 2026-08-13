@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.fabric.loom)
 }
 
-val archivesBaseName = "meteor-client"
+val archivesBaseName = "meteor-evfork"
 
 group = "meteordevelopment"
 version = "${libs.versions.minecraft.get()}-${providers.gradleProperty("build_number").getOrElse("local")}"
