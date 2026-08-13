@@ -16,6 +16,7 @@ A fork of [meteor-client](https://github.com/MeteorDevelopment/meteor-client) fo
 
 ## Changes in this fork
 
+- **Portals:** Keeps chat open and preserves unsent messages through nether portals.
 - **Rendering stability:** Fixes an entity-outline rendering crash.
 
 Meteor maintainers: Feel free to DM me if you would like anything from here submitted upstream as a PR.
