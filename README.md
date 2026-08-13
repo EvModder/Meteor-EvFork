@@ -20,7 +20,7 @@
 
 ## Changes
 
-- **26.2 rendering stability:** Prevents the entity-outline rendering crash.
+- **Rendering stability:** Fix an entity-outline rendering crash.
 - **Updated eBounce:** Adapts elytra redeploy and setback recovery for the recent Grim update.
 
 ## Upstream
