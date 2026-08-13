@@ -28,17 +28,15 @@ public class Bounce extends ElytraFlightMode {
         super(ElytraFlightModes.Bounce);
     }
 
-    boolean rubberbanded = false;
+    private boolean rubberbanded;
+    private boolean hasStartedFlying;
 
-    int tickDelay = elytraFly.restartDelay.get();
-    double prevFov;
+    private int tickDelay = elytraFly.restartDelay.get();
+    private double prevFov;
 
     @Override
     public void onTick() {
         super.onTick();
-
-        if (mc.options.keyJump.isDown() && !mc.player.isFallFlying() && !elytraFly.manualTakeoff.get())
-            mc.getConnection().send(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
 
         // Make sure all the conditions are met (player has an elytra, isn't in water, etc)
         if (checkConditions(mc.player)) {
@@ -62,7 +60,6 @@ public class Bounce extends ElytraFlightMode {
                 if (tickDelay > 0) {
                     tickDelay--;
                 } else {
-                    mc.getConnection().send(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
                     rubberbanded = false;
                     tickDelay = elytraFly.restartDelay.get();
                 }
@@ -74,7 +71,18 @@ public class Bounce extends ElytraFlightMode {
     public void onPreTick() {
         super.onPreTick();
 
-        if (checkConditions(mc.player) && elytraFly.sprint.get()) mc.player.setSprinting(true);
+        if (!checkConditions(mc.player)) return;
+
+        if (elytraFly.sprint.get()) mc.player.setSprinting(true);
+
+        // Re-deploy before physics, but only after a real airborne frame. Recasting while grounded can leave the
+        // client gliding after the server rejected the packet, which causes repeated setbacks on strict anticheats.
+        boolean flying = mc.player.isFallFlying();
+        if (flying) {
+            hasStartedFlying = true;
+        } else if (!rubberbanded && !mc.player.onGround() && (!elytraFly.manualTakeoff.get() || hasStartedFlying)) {
+            recastElytra(mc.player);
+        }
     }
 
     private void unpress() {
@@ -86,6 +94,8 @@ public class Bounce extends ElytraFlightMode {
     public void onPacketReceive(PacketEvent.Receive event) {
         if (event.packet instanceof ClientboundPlayerPositionPacket) {
             rubberbanded = true;
+            tickDelay = elytraFly.restartDelay.get();
+            unpress();
             mc.player.stopFallFlying();
         }
     }
@@ -98,7 +108,7 @@ public class Bounce extends ElytraFlightMode {
     }
 
     public static boolean recastElytra(LocalPlayer player) {
-        if (checkConditions(player) && startGliding(player)) {
+        if (!player.onGround() && checkConditions(player) && startGliding(player)) {
             player.connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
             return true;
         } else return false;
@@ -132,13 +142,21 @@ public class Bounce extends ElytraFlightMode {
 
     @Override
     public void onActivate() {
+        super.onActivate();
+
+        rubberbanded = false;
+        hasStartedFlying = false;
+        tickDelay = elytraFly.restartDelay.get();
         prevFov = mc.options.fovEffectScale().get();
     }
 
     @Override
     public void onDeactivate() {
+        super.onDeactivate();
+
         unpress();
         rubberbanded = false;
+        hasStartedFlying = false;
         if (prevFov != 0 && !elytraFly.sprint.get()) mc.options.fovEffectScale().set(prevFov);
     }
 }
