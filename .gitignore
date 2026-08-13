@@ -1,4 +1,5 @@
 *.DS_Store
+work_files/
 .gradle
 .settings
 .project
@@ -8,11 +9,7 @@ out
 run
 bin
 logs
-.github/builds/node_modules
-.github/moderation/node_modules
 *.iws
 *.ipr
 *.iml
-.idea/*
-!.idea/copyright/*
-!.idea/scopes/*
+.idea/

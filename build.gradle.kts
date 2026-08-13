@@ -2,20 +2,17 @@ import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
     alias(libs.plugins.fabric.loom)
-    id("maven-publish")
     alias(libs.plugins.errorprone)
 }
 
-val archivesBaseName = providers.gradleProperty("archives_base_name").get()
-val mavenGroup = providers.gradleProperty("maven_group").get()
+val archivesBaseName = "meteor-evfork"
+
+group = "meteordevelopment"
+version = "${libs.versions.minecraft.get()}-${providers.gradleProperty("build_number").getOrElse("local")}"
 val runErrorProne = providers.gradleProperty("errorprone").isPresent
 
 base {
     archivesName = archivesBaseName
-    group = mavenGroup
-
-    val suffix = providers.gradleProperty("build_number").getOrElse("local")
-    version = "${libs.versions.minecraft.get()}-$suffix"
 }
 
 repositories {
@@ -244,32 +241,6 @@ tasks {
     build {
         if (System.getenv("CI")?.toBoolean() == true) {
             dependsOn("javadocJar")
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            artifactId = "meteor-client"
-
-            version = "${libs.versions.minecraft.get()}-SNAPSHOT"
-        }
-    }
-
-    repositories {
-        maven("https://maven.meteordev.org/snapshots") {
-            name = "meteor-maven"
-
-            credentials {
-                username = System.getenv("MAVEN_METEOR_ALIAS")
-                password = System.getenv("MAVEN_METEOR_TOKEN")
-            }
-
-            authentication {
-                create<BasicAuthentication>("basic")
-            }
         }
     }
 }
