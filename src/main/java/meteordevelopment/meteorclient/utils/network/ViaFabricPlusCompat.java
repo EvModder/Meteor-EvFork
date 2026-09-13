@@ -17,7 +17,7 @@ public final class ViaFabricPlusCompat {
         if (!LOADED) return false;
 
         try {
-            return ViaFabricPlus.getImpl().getTargetVersion().getVersion() == 769;
+            return ViaFabricPlus.api().targetVersion().getVersion() == 769;
         } catch (LinkageError | RuntimeException ignored) {
             return false;
         }

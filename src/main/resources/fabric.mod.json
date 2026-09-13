@@ -60,6 +60,6 @@
     "sodium": "<0.9.1",
     "morechathistory": "*",
     "lithium": "<0.22.1",
-    "viafabricplus": ">=5.0.0"
+    "viafabricplus": "<5.0.0"
   }
 }
