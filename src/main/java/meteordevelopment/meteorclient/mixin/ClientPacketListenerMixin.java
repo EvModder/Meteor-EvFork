@@ -28,6 +28,7 @@ import meteordevelopment.meteorclient.pathing.BaritoneUtils;
 import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.movement.Velocity;
+import meteordevelopment.meteorclient.systems.modules.movement.elytrafly.ElytraFly;
 import meteordevelopment.meteorclient.systems.modules.player.NoRotate;
 import meteordevelopment.meteorclient.systems.modules.player.Portals;
 import meteordevelopment.meteorclient.systems.modules.render.NoRender;
@@ -61,6 +62,17 @@ public abstract class ClientPacketListenerMixin extends ClientCommonPacketListen
 
     protected ClientPacketListenerMixin(Minecraft client, Connection connection, CommonListenerCookie connectionState) {
         super(client, connection, connectionState);
+    }
+
+    @Inject(method = "handleSetEntityData", at = @At("RETURN"))
+    private void onGlideMetadataApplied(ClientboundSetEntityDataPacket packet, CallbackInfo ci) {
+        // Acknowledge on the game thread only after vanilla has applied the flags.
+        Modules.get().get(ElytraFly.class).onBounceMetadataApplied(packet);
+    }
+
+    @Inject(method = "handleMovePlayer", at = @At("RETURN"))
+    private void onBouncePositionApplied(ClientboundPlayerPositionPacket packet, CallbackInfo ci) {
+        Modules.get().get(ElytraFly.class).onBouncePositionApplied();
     }
 
     @Unique

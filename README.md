@@ -16,6 +16,7 @@ A fork of [meteor-client](https://github.com/MeteorDevelopment/meteor-client) fo
 
 ## Changes in this fork
 
+- **eBounce:** Updated Grim anticheat workaround for 1.21.4-26.2; no longer pauses with the inventory open.
 - **Portals:** Keeps chat open and preserves unsent messages through nether portals.
 - **Iris compatibility:** Fixes tracer and ESP view bobbing with shaders.
 - **Rendering stability:** Fixes an entity-outline rendering crash.

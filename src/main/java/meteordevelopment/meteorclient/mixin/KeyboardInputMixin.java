@@ -7,6 +7,7 @@ package meteordevelopment.meteorclient.mixin;
 
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.movement.Sneak;
+import meteordevelopment.meteorclient.systems.modules.movement.elytrafly.ElytraFly;
 import meteordevelopment.meteorclient.systems.modules.render.Freecam;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.KeyboardInput;
@@ -18,6 +19,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(KeyboardInput.class)
 public abstract class KeyboardInputMixin extends ClientInput {
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void restoreBounceInput(CallbackInfo ci) {
+        Modules.get().get(ElytraFly.class).restoreBounceInput();
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void isPressed(CallbackInfo ci) {
         if (Modules.get().get(Sneak.class).doVanilla() || Modules.get().get(Freecam.class).staySneaking())

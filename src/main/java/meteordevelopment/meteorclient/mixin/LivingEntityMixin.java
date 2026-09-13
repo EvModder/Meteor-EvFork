@@ -12,12 +12,11 @@ import meteordevelopment.meteorclient.events.entity.player.CanWalkOnFluidEvent;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.movement.HighJump;
 import meteordevelopment.meteorclient.systems.modules.movement.Sprint;
-import meteordevelopment.meteorclient.systems.modules.movement.elytrafly.ElytraFlightModes;
 import meteordevelopment.meteorclient.systems.modules.movement.elytrafly.ElytraFly;
-import meteordevelopment.meteorclient.systems.modules.movement.elytrafly.modes.Bounce;
 import meteordevelopment.meteorclient.systems.modules.player.NoStatusEffects;
 import meteordevelopment.meteorclient.systems.modules.render.HandView;
 import meteordevelopment.meteorclient.systems.modules.render.NoRender;
+import meteordevelopment.meteorclient.utils.network.ViaFabricPlusCompat;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
@@ -29,17 +28,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
+    @Shadow
+    private int noJumpDelay;
+
     public LivingEntityMixin(EntityType<?> type, Level world) {
         super(type, world);
+    }
+
+    @Inject(method = "aiStep", at = @At("HEAD"))
+    private void resetBounceJumpDelay(CallbackInfo ci) {
+        if ((Object) this == mc.player && Modules.get().get(ElytraFly.class).isBounceActive()) noJumpDelay = 0;
     }
 
     @ModifyReturnValue(method = "canStandOnFluid", at = @At("RETURN"))
@@ -87,19 +93,6 @@ public abstract class LivingEntityMixin extends Entity {
         return original;
     }
 
-    @Unique
-    private boolean previousElytra = false;
-
-    @Inject(method = "isFallFlying", at = @At("TAIL"), cancellable = true)
-    public void recastOnLand(CallbackInfoReturnable<Boolean> cir) {
-        boolean elytra = cir.getReturnValue();
-        ElytraFly elytraFly = Modules.get().get(ElytraFly.class);
-        if (previousElytra && !elytra && elytraFly.isActive() && elytraFly.flightMode.get() == ElytraFlightModes.Bounce) {
-            cir.setReturnValue(Bounce.recastElytra(mc.player));
-        }
-        previousElytra = elytra;
-    }
-
     @ModifyReturnValue(method = "hasEffect", at = @At("RETURN"))
     private boolean hasEffect(boolean original, Holder<MobEffect> effect) {
         if (effect == null || effect.value() == null) return original;
@@ -130,9 +123,28 @@ public abstract class LivingEntityMixin extends Entity {
         return -1;
     }
 
+    @Inject(method = "jumpFromGround", at = @At("HEAD"))
+    private void prepareTranslatedBounceJump(CallbackInfo ci) {
+        if ((Object) this == mc.player && ViaFabricPlusCompat.uses1214SprintRules()) {
+            Modules.get().get(ElytraFly.class).prepareBounceGroundJump();
+        }
+    }
+
+    @ModifyVariable(method = "setSprinting", at = @At("HEAD"), argsOnly = true)
+    private boolean keepTranslatedBounceSprinting(boolean sprinting) {
+        // Change the setter argument so the shared flag, speed attribute and normal
+        // sprint packet agree. A getter-only override leaves those states inconsistent.
+        return sprinting || ((Object) this == mc.player && Modules.get().get(ElytraFly.class).shouldKeepBounceSprinting());
+    }
+
     @ModifyExpressionValue(method = "jumpFromGround", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isSprinting()Z"))
     private boolean modifyIsSprinting(boolean original) {
         if ((Object) this != mc.player) return original;
+        if (Modules.get().get(ElytraFly.class).isBounceActive()) {
+            // 1.21.4 cancels sprint before gliding jumps. Do not add a sprint boost while
+            // the translated connection is telling the server that we are not sprinting.
+            return original || !ViaFabricPlusCompat.uses1214SprintRules();
+        }
         if (!Modules.get().get(Sprint.class).rageSprint()) return original;
 
         // only add the extra velocity if you're actually moving, otherwise you'll jump in place and move forward

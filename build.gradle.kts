@@ -82,7 +82,10 @@ dependencies {
     compileOnly(libs.lithium) { isTransitive = false }
     compileOnly(libs.iris) { isTransitive = false }
     compileOnly(libs.viafabricplus) { isTransitive = false }
-    compileOnly(libs.viafabricplus.api) { isTransitive = false }
+    compileOnly(libs.viafabricplus.api) {
+        // VFP 4 references an unavailable Bedrock snapshot; only the Java protocol API is needed.
+        exclude(group = "net.raphimc", module = "ViaBedrock")
+    }
 
     compileOnly(libs.baritone)
     compileOnly(libs.modmenu)

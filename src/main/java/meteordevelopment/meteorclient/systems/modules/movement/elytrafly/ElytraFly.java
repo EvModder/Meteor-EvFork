@@ -25,6 +25,7 @@ import meteordevelopment.meteorclient.systems.modules.render.Freecam;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.util.Mth;
@@ -399,6 +400,10 @@ public class ElytraFly extends Module {
 
     @EventHandler
     private void onPlayerMove(PlayerMoveEvent event) {
+        // Bounce drives vanilla input directly. Applying the generic unloaded-chunk clamp here can zero its
+        // movement after prediction has already run and seed a Grim desync.
+        if (flightMode.get() == ElytraFlightModes.Bounce) return;
+
         if (!(mc.player.getItemBySlot(EquipmentSlot.CHEST).has(DataComponents.GLIDER))) return;
 
         currentMode.autoTakeoff();
@@ -486,6 +491,30 @@ public class ElytraFly extends Module {
 
     public boolean canPacketEfly() {
         return isActive() && flightMode.get() == ElytraFlightModes.Packet && mc.player.getItemBySlot(EquipmentSlot.CHEST).has(DataComponents.GLIDER) && !mc.player.onGround();
+    }
+
+    public boolean isBounceActive() {
+        return isActive() && flightMode.get() == ElytraFlightModes.Bounce;
+    }
+
+    public void restoreBounceInput() {
+        if (isBounceActive() && currentMode instanceof Bounce bounce) bounce.restoreInput();
+    }
+
+    public void prepareBounceGroundJump() {
+        if (isBounceActive() && currentMode instanceof Bounce bounce) bounce.prepareGroundJump();
+    }
+
+    public boolean shouldKeepBounceSprinting() {
+        return isBounceActive() && currentMode instanceof Bounce bounce && bounce.shouldKeepSprinting();
+    }
+
+    public void onBounceMetadataApplied(ClientboundSetEntityDataPacket packet) {
+        if (mc.player != null && isBounceActive() && currentMode instanceof Bounce bounce) bounce.onMetadataApplied(packet);
+    }
+
+    public void onBouncePositionApplied() {
+        if (mc.player != null && isBounceActive() && currentMode instanceof Bounce bounce) bounce.onPositionApplied();
     }
 
     @EventHandler
