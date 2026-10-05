@@ -16,6 +16,17 @@ base {
 }
 
 repositories {
+    exclusiveContent {
+        forRepository {
+            ivy {
+                name = "baritone-releases"
+                url = uri("https://github.com/cabaletta/baritone/releases/download")
+                patternLayout { artifact("v[revision]/[artifact]-[revision].[ext]") }
+                metadataSources { artifact() }
+            }
+        }
+        filter { includeModule("cabaletta", "baritone-api-fabric") }
+    }
     maven {
         name = "meteor-maven"
         url = uri("https://maven.meteordev.org/releases")
@@ -48,6 +59,18 @@ val jij = configurations.create("jij")
 val launcher = sourceSets.create("launcher") {
     java.srcDir("src/launcher/java")
 }
+
+val portTest = sourceSets.create("portTest") {
+    compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+    runtimeClasspath += compileClasspath + sourceSets.main.get().runtimeClasspath
+}
+val verifyPort = tasks.register<JavaExec>("verifyPort") {
+    dependsOn(tasks.named(portTest.classesTaskName))
+    classpath = portTest.runtimeClasspath
+    mainClass.set("meteordevelopment.meteorclient.PortCompatibilityTest")
+    providers.gradleProperty("compatWurstJar").orNull?.let { args(it) }
+}
+tasks.check { dependsOn(verifyPort) }
 
 configurations {
     // include mods

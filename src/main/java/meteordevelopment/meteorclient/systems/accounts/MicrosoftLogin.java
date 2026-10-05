@@ -7,7 +7,8 @@ package meteordevelopment.meteorclient.systems.accounts;
 
 import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-import net.minecraft.util.Util;
+import com.mojang.blaze3d.Blaze3D;
+import java.net.URI;
 import net.raphimc.minecraftauth.MinecraftAuth;
 import net.raphimc.minecraftauth.java.JavaAuthManager;
 import net.raphimc.minecraftauth.java.model.MinecraftProfile;
@@ -54,7 +55,7 @@ public class MicrosoftLogin {
                     .login(DeviceCodeMsaAuthService::new, (Consumer<MsaDeviceCode>) deviceCode -> {
                         String urlString = deviceCode.getDirectVerificationUri();
                         urlFuture.complete(urlString);
-                        Util.getPlatform().openUri(urlString);
+                        Blaze3D.openUri(URI.create(urlString));
                     });
 
                 MsaToken msaToken = authManager.getMsaToken().getUpToDate();
