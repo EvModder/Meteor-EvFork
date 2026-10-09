@@ -22,6 +22,7 @@ import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.utils.world.TickRate;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -203,6 +204,13 @@ public class KillAura extends Module {
     );
 
     // Timing
+
+    private final Setting<Boolean> preSwingAttacks = sgTiming.add(new BoolSetting.Builder()
+        .name("pre-swing-attacks")
+        .description("Air-swings before charged attacks to prevent sprint-attack slowdown while eBouncing. Reduces attack damage.")
+        .defaultValue(false)
+        .build()
+    );
 
     private final Setting<Boolean> pauseOnLag = sgTiming.add(new BoolSetting.Builder()
         .name("pause-on-lag")
@@ -459,6 +467,14 @@ public class KillAura extends Module {
     private void attack(Entity target) {
         if (rotation.get() == RotationMode.OnHit)
             Rotations.rotate(Rotations.getYaw(target), Rotations.getPitch(target, Target.Body));
+
+        if (preSwingAttacks.get() && mc.player.getAttackStrengthScale(0.5f) > 0.9f) {
+            // Match an air miss, before the entity attack. In 26.3 swing() alone is local;
+            // the explicit punch packet communicates the miss to the server/translator.
+            mc.player.resetAttackStrengthTicker();
+            mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
+            mc.getConnection().send(ServerboundPunchPacket.INSTANCE);
+        }
 
         mc.gameMode.attack(mc.player, target);
         mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);

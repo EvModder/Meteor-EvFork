@@ -88,8 +88,9 @@ public class Sprint extends Module {
     private void onPacketSent(PacketEvent.Sent event) {
         if (!unsprintOnHit.get() || !keepSprint.get()) return;
         if (!(event.packet instanceof ServerboundAttackPacket)) return;
-        if (!shouldSprint() || mc.player.isSprinting()) return;
+        if (!shouldSprint()) return;
 
+        // onPacketSend stopped sprinting on the server, even if eBounce kept the local flag true.
         mc.getConnection().send(new ServerboundPlayerCommandPacket(mc.player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
         mc.player.setSprinting(true);
     }

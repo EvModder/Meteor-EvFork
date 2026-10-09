@@ -17,6 +17,7 @@ A fork of [meteor-client](https://github.com/MeteorDevelopment/meteor-client) fo
 ## Changes in this fork
 
 - **eBounce:** Updated Grim anticheat workaround; no longer pauses with the inventory open.
+- **Kill Aura:** Optional pre-swing attacks reduce sprint-attack slowdown at the cost of attack damage.
 - **ViaFabricPlus 5:** Supports optional VFP 5.1.1+; installing older versions will cause startup crashes.
 - **Portals:** Keeps chat open and preserves unsent messages through nether portals.
 - **Iris compatibility:** Fixes tracer and ESP view bobbing with shaders.
