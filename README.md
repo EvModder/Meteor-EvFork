@@ -20,6 +20,7 @@ A fork of [meteor-client](https://github.com/MeteorDevelopment/meteor-client) fo
 - **Kill Aura:** Optional pre-swing attacks reduce sprint-attack slowdown at the cost of attack damage.
 - **ViaFabricPlus 5:** Supports optional VFP 5.1.1+; installing older versions will cause startup crashes.
 - **Portals:** Keeps chat open and preserves unsent messages through nether portals.
+- **GUI:** Restores text input and corrects macOS Retina scaling on 26.3.
 - **Iris compatibility:** Fixes tracer and ESP view bobbing with shaders.
 - **Rendering stability:** Fixes an entity-outline rendering crash.
 

@@ -6,6 +6,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -38,10 +39,25 @@ public final class PortCompatibilityTest {
         check(helper != null, "eBounce protocol helper retained");
         check(read("meteordevelopment/meteorclient/mixin/KeyboardInputMixin").methods.stream().anyMatch(m -> m.name.equals("restoreBounceInput")), "Inventory-open eBounce hook retained");
         check(read("meteordevelopment/meteorclient/mixin/ClientPacketListenerMixin").methods.stream().anyMatch(m -> m.name.toLowerCase().contains("chat")), "Portal chat hook retained");
+        checkCalls("gui/widgets/input/WTextBox", "setFocused", "com/mojang/blaze3d/platform/TextInputManager", "onTextInputFocusChange", "(Ljava/lang/Object;Z)V");
+        checkCalls("gui/themes/meteor/MeteorGuiTheme", "scale", "com/mojang/blaze3d/platform/Window", "getPixelDensity", "()F");
         if (args.length > 0) inspectWurst(args[0]);
         System.out.println("Port bytecode checks: " + checks + ", failures: " + failures.size());
         failures.forEach(System.err::println);
         if (!failures.isEmpty()) throw new AssertionError("Port compatibility checks failed");
+    }
+
+    private static void checkCalls(String type, String method, String owner, String target, String descriptor) throws Exception {
+        boolean found = false;
+        for (var m : read("meteordevelopment/meteorclient/" + type).methods) {
+            if (!m.name.equals(method)) continue;
+            for (var instruction : m.instructions) {
+                if (instruction instanceof MethodInsnNode call && call.owner.equals(owner)
+                    && call.name.equals(target) && call.desc.equals(descriptor)) found = true;
+            }
+        }
+        check(found, type + "." + method + " must call " + target);
+        check(hasMethod(read(owner), target, descriptor), "Missing GUI integration API " + owner + "." + target);
     }
 
     private static void verifyMixin(String name) throws Exception {
@@ -188,7 +204,7 @@ public final class PortCompatibilityTest {
             ClassNode node = null;
             if (stream != null) {
                 node = new ClassNode();
-                new ClassReader(stream).accept(node, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                new ClassReader(stream).accept(node, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
             }
             classes.put(name, node);
             return node;

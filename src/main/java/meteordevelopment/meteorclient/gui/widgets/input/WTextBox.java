@@ -717,6 +717,8 @@ public abstract class WTextBox extends WWidget {
         boolean wasJustFocused = focused && !this.focused;
 
         this.focused = focused;
+        // SDL only emits text events while a widget owns text-input focus.
+        mc.textInputManager().onTextInputFocusChange(this, focused);
 
         resetSelection();
 

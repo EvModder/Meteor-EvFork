@@ -381,7 +381,8 @@ public class MeteorGuiTheme extends GuiTheme {
         double scaled = value * scale.get();
 
         if (SystemUtils.IS_OS_MAC) {
-            scaled /= (double) mc.getWindow().getWidth() / mc.getWindow().getWidth();
+            // Meteor lays out in framebuffer pixels, whereas SDL window sizes use points.
+            scaled *= mc.getWindow().getPixelDensity();
         }
 
         return scaled;
