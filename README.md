@@ -22,6 +22,6 @@ A fork of [meteor-client](https://github.com/MeteorDevelopment/meteor-client) fo
 - **Portals:** Keeps chat open and preserves unsent messages through nether portals.
 - **GUI:** Restores text input and corrects macOS Retina scaling on 26.3.
 - **Iris compatibility:** Fixes tracer and ESP view bobbing with shaders.
-- **Rendering stability:** Fixes an entity-outline rendering crash.
+- **Rendering stability:** Fixes an entity-outline crash and restores shader ESP/Chams rendering on 26.3.
 
 Meteor maintainers: Feel free to DM me if you would like anything from here submitted upstream as a PR.
