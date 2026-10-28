@@ -3,11 +3,11 @@
 jdk = "25"
 minecraft = "26.3"
 fabric-loader = "0.19.5"
-fabric-api = "0.162.0+26.3"
+fabric-api = "0.165.0+26.3"
 
 # Plugins
 # Loom (https://github.com/FabricMC/fabric-loom)
-loom = "1.18-SNAPSHOT"
+loom = "1.19.3"
 # Error Prone Plugin (https://github.com/tbroyer/gradle-errorprone-plugin)
 errorprone-plugin = "5.1.1"
 
@@ -31,6 +31,7 @@ discordipc = "1.1"
 # Reflections (https://github.com/ronmamo/reflections)
 reflections = "0.10.2"
 # Netty (https://github.com/netty/netty)
+# Match the Netty runtime supplied by Minecraft 26.3.
 netty = "4.2.16.Final"
 # ViaFabricPlus (https://github.com/ViaVersion/ViaFabricPlus)
 viafabricplus = "5.1.1"
@@ -41,9 +42,10 @@ minecraftauth = "5.0.2"
 
 # Libraries
 # Error Prone (https://github.com/google/error-prone)
-errorprone = "2.50.0"
+errorprone = "2.51.0"
 # NullAway (https://github.com/uber/NullAway)
-nullaway = "0.14.0"
+nullaway = "0.14.3"
+j2objc-annotations = "3.1"
 
 [libraries]
 # Fabric base
@@ -69,6 +71,7 @@ waybackauthlib = { module = "de.florianreuth:waybackauthlib", version.ref = "way
 minecraft-auth = { module = "net.raphimc:MinecraftAuth", version.ref = "minecraftauth" }
 errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorprone" }
 nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+j2objc-annotations = { module = "com.google.j2objc:j2objc-annotations", version.ref = "j2objc-annotations" }
 
 [plugins]
 fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }
