@@ -5,6 +5,7 @@
 
 package meteordevelopment.meteorclient.gui.screens;
 
+import com.mojang.blaze3d.Blaze3D;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.gui.GuiTheme;
@@ -13,9 +14,8 @@ import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.gui.widgets.containers.WTable;
 import meteordevelopment.meteorclient.utils.network.Http;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-import com.mojang.blaze3d.Blaze3D;
-import java.net.URI;
 
+import java.net.URI;
 import java.net.http.HttpResponse;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;

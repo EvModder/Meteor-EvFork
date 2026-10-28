@@ -5,6 +5,7 @@
 
 package meteordevelopment.meteorclient.systems.modules.misc.swarm;
 
+import com.mojang.blaze3d.Blaze3D;
 import meteordevelopment.meteorclient.events.game.GameJoinedEvent;
 import meteordevelopment.meteorclient.events.game.GameLeftEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -17,7 +18,7 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Categories;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
-import com.mojang.blaze3d.Blaze3D;
+
 import java.net.URI;
 
 public class Swarm extends Module {

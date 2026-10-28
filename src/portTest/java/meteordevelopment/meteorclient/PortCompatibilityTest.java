@@ -39,8 +39,10 @@ public final class PortCompatibilityTest {
         check(helper != null, "eBounce protocol helper retained");
         check(read("meteordevelopment/meteorclient/mixin/KeyboardInputMixin").methods.stream().anyMatch(m -> m.name.equals("restoreBounceInput")), "Inventory-open eBounce hook retained");
         check(read("meteordevelopment/meteorclient/mixin/ClientPacketListenerMixin").methods.stream().anyMatch(m -> m.name.toLowerCase().contains("chat")), "Portal chat hook retained");
-        checkCalls("gui/widgets/input/WTextBox", "setFocused", "com/mojang/blaze3d/platform/TextInputManager", "onTextInputFocusChange", "(Ljava/lang/Object;Z)V");
+        checkCalls("gui/WidgetScreen", "init", "com/mojang/blaze3d/platform/TextInputManager", "startTextInput", "(Ljava/lang/Object;)V");
         checkCalls("gui/themes/meteor/MeteorGuiTheme", "scale", "com/mojang/blaze3d/platform/Window", "getPixelDensity", "()F");
+        checkCalls("systems/modules/combat/KillAura", "attack", "net/minecraft/client/player/LocalPlayer", "resetAttackStrengthTicker", "()V");
+        checkCalls("systems/modules/combat/KillAura", "attack", "meteordevelopment/meteorclient/utils/player/SwingMode", "attackSwing", "(Lnet/minecraft/world/InteractionHand;)V");
         if (args.length > 0) inspectWurst(args[0]);
         System.out.println("Port bytecode checks: " + checks + ", failures: " + failures.size());
         failures.forEach(System.err::println);
@@ -70,7 +72,9 @@ public final class PortCompatibilityTest {
         for (Object type : list(value(annotation, "value"))) targets.add(((Type) type).getInternalName());
         for (Object type : list(value(annotation, "targets"))) targets.add(type.toString().replace('.', '/'));
         recordInvasiveHooks(mixin, targets, invasiveHooks);
-        boolean optional = annotations(mixin.visibleAnnotations, mixin.invisibleAnnotations).stream().anyMatch(a -> a.desc.endsWith("/Pseudo;"));
+        // MixinPlugin gates the upstream Metallum integration on the optional mod's presence.
+        boolean optional = name.startsWith("meteordevelopment.meteorclient.mixin.metallum.")
+            || annotations(mixin.visibleAnnotations, mixin.invisibleAnnotations).stream().anyMatch(a -> a.desc.endsWith("/Pseudo;"));
         for (String targetName : targets) {
             ClassNode target = read(targetName);
             if (target == null && optional) continue;

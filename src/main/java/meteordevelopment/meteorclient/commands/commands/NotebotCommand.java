@@ -5,6 +5,7 @@
 
 package meteordevelopment.meteorclient.commands.commands;
 
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -24,12 +25,11 @@ import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.sounds.SoundEvent;
-import com.mojang.blaze3d.Blaze3D;
-import java.net.URI;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 
-import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -161,10 +161,9 @@ public class NotebotCommand extends Command {
             MeteorClient.EVENT_BUS.unsubscribe(this);
             return;
         }
-        try {
+        try (var writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             MeteorClient.EVENT_BUS.unsubscribe(this);
 
-            FileWriter file = new FileWriter(path.toFile());
             for (var entry : song.int2ObjectEntrySet()) {
                 int tick = entry.getIntKey();
                 List<Note> notes = entry.getValue();
@@ -173,11 +172,10 @@ public class NotebotCommand extends Command {
                     NoteBlockInstrument instrument = note.getInstrument();
                     int noteLevel = note.getNoteLevel();
 
-                    file.write(String.format("%d:%d:%d\n", tick, noteLevel, instrument.ordinal()));
+                    writer.write(String.format("%d:%d:%d\n", tick, noteLevel, instrument.ordinal()));
                 }
             }
 
-            file.close();
             info("Song saved.");
         } catch (IOException _) {
             info("Couldn't create the file.");

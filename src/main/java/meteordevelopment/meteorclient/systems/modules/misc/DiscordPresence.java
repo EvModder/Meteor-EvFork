@@ -7,6 +7,7 @@ package meteordevelopment.meteorclient.systems.modules.misc;
 
 //Created by squidoodly
 
+import com.mojang.blaze3d.Blaze3D;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import meteordevelopment.discordipc.DiscordIPC;
 import meteordevelopment.discordipc.RichPresence;
@@ -34,10 +35,9 @@ import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.EditWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.realms.RealmsScreen;
-import com.mojang.blaze3d.Blaze3D;
-import java.net.URI;
 import org.meteordev.starscript.Script;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 

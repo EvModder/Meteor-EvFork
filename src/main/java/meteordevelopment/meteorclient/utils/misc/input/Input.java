@@ -16,6 +16,11 @@ public class Input {
     private static final boolean[] keys = new boolean[512];
     private static final boolean[] buttons = new boolean[16];
 
+    private static final int MOD_KEYS = InputConstants.MOD_SHIFT
+        | InputConstants.MOD_CONTROL
+        | InputConstants.MOD_ALT
+        | InputConstants.MOD_SUPER;
+
     private static CursorType lastCursorStyle = CursorTypes.ARROW;
 
     private Input() {
@@ -71,11 +76,17 @@ public class Input {
         };
     }
 
-    public static int normalizeModifiers(int modifiers) {
-        // SDL supplies left/right bits separately; Meteor shortcuts compare combined masks.
-        for (int mask : new int[] {InputConstants.MOD_SHIFT, InputConstants.MOD_CONTROL, InputConstants.MOD_ALT, InputConstants.MOD_SUPER}) {
-            if ((modifiers & mask) != 0) modifiers |= mask;
+    public static boolean modsMatch(int currentMods, int... desiredMods) {
+        int desiredMask = 0;
+
+        for (int mod : desiredMods) {
+            // a required modifier isn't held
+            if ((currentMods & mod) == 0) return false;
+
+            desiredMask |= mod;
         }
-        return modifiers;
+
+        // nothing extra is held, discounting capslock & numlock
+        return (currentMods & MOD_KEYS & ~desiredMask) == 0;
     }
 }

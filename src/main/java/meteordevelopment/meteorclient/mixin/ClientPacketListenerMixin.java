@@ -94,7 +94,7 @@ public abstract class ClientPacketListenerMixin extends ClientCommonPacketListen
 
     @Inject(method = "handleAddEntity", at = @At("HEAD"), cancellable = true)
     private void onHandleAddEntity(ClientboundAddEntityPacket packet, CallbackInfo ci) {
-        if (packet != null && packet.getType() != null) {
+        if (packet != null) {
             if (Modules.get().get(NoRender.class).noEntity(packet.getType()) && Modules.get().get(NoRender.class).getDropSpawnPacket()) {
                 ci.cancel();
             }

@@ -13,11 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class Keybind implements ISerializable<Keybind>, ICopyable<Keybind> {
     public enum Modifier {
@@ -255,7 +251,8 @@ public class Keybind implements ISerializable<Keybind>, ICopyable<Keybind> {
             for (int i = 0; i < modifiersTag.size(); i++) {
                 try {
                     modifiers.add(Modifier.valueOf(modifiersTag.getStringOr(i, "")));
-                } catch (IllegalArgumentException ignored) {}
+                } catch (IllegalArgumentException _) {
+                }
             }
         } else {
             // Legacy format: raw ints (GLFW)

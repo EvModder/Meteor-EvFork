@@ -19,10 +19,10 @@ import meteordevelopment.meteorclient.utils.player.FindItemResult;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.utils.player.PlayerUtils;
 import meteordevelopment.meteorclient.utils.player.Rotations;
+import meteordevelopment.meteorclient.utils.player.SwingMode;
 import meteordevelopment.meteorclient.utils.world.TickRate;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
-import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -469,15 +469,13 @@ public class KillAura extends Module {
             Rotations.rotate(Rotations.getYaw(target), Rotations.getPitch(target, Target.Body));
 
         if (preSwingAttacks.get() && mc.player.getAttackStrengthScale(0.5f) > 0.9f) {
-            // Match an air miss, before the entity attack. In 26.3 swing() alone is local;
-            // the explicit punch packet communicates the miss to the server/translator.
+            // Send the air miss before the entity attack so both sides reset the charge.
             mc.player.resetAttackStrengthTicker();
-            mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
-            mc.getConnection().send(ServerboundPunchPacket.INSTANCE);
+            SwingMode.Both.attackSwing(InteractionHand.MAIN_HAND);
         }
 
         mc.gameMode.attack(mc.player, target);
-        mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
+        SwingMode.Both.attackSwing(InteractionHand.MAIN_HAND);
 
         hitTimer = 0;
     }

@@ -15,11 +15,11 @@ import meteordevelopment.meteorclient.utils.player.FindItemResult;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.utils.player.SlotUtils;
+import meteordevelopment.meteorclient.utils.player.SwingMode;
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -130,18 +130,19 @@ public class BlockUtils {
         return true;
     }
 
-    public static void interact(BlockHitResult blockHitResult, InteractionHand hand, boolean swing) {
+    public static InteractionResult interact(BlockHitResult blockHitResult, InteractionHand hand, boolean swing) {
         boolean wasSneaking = mc.player.isShiftKeyDown();
         mc.player.setShiftKeyDown(false);
 
         InteractionResult result = mc.gameMode.useItemOn(mc.player, hand, blockHitResult);
 
-        if (result.consumesAction()) {
-            if (swing) mc.player.swing(hand, mc.player.getItemInHand(hand).getInteractAnimation(), false);
-            else mc.getConnection().send(new ServerboundPunchPacket());
+        if (result instanceof InteractionResult.Success success && success.swingSource() == InteractionResult.SwingSource.PREDICTED) {
+            SwingMode.of(swing).interactSwing(hand);
         }
 
         mc.player.setShiftKeyDown(wasSneaking);
+
+        return result;
     }
 
     public static boolean canPlaceBlock(BlockPos blockPos, boolean checkEntities, Block block) {
@@ -252,8 +253,7 @@ public class BlockUtils {
             mc.gameMode.continueDestroyBlock(pos, getDirection(blockPos));
         else mc.gameMode.startDestroyBlock(pos, getDirection(blockPos));
 
-        if (swing) mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getMainHandItem().getAttackAnimation(), false);
-        else mc.getConnection().send(new ServerboundPunchPacket());
+        SwingMode.of(swing).attackSwing(InteractionHand.MAIN_HAND);
 
         breaking = true;
         breakingThisTick = true;
