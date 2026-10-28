@@ -25,6 +25,7 @@ public final class PortCompatibilityTest {
         var loader = PortCompatibilityTest.class.getClassLoader();
         var metadata = JsonParser.parseReader(new InputStreamReader(loader.getResourceAsStream("fabric.mod.json"))).getAsJsonObject();
         check(metadata.getAsJsonObject("depends").get("minecraft").getAsString().equals("~26.3"), "Minecraft metadata");
+        check(metadata.getAsJsonObject("depends").get("fabricloader").getAsString().equals(">=0.19.5"), "Minimum Fabric Loader metadata");
         check(!metadata.getAsJsonObject("depends").has("viafabricplus"), "VFP remains optional");
         for (var entry : metadata.getAsJsonArray("mixins")) {
             var config = JsonParser.parseReader(new InputStreamReader(loader.getResourceAsStream(entry.getAsString()))).getAsJsonObject();

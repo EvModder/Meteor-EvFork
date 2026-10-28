@@ -108,6 +108,7 @@ dependencies {
 
     compileOnly(libs.baritone)
     compileOnly(libs.modmenu)
+    compileOnly(libs.j2objc.annotations)
 
     // Libraries (JAR-in-JAR)
     jij(libs.orbit)
