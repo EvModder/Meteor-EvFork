@@ -224,6 +224,9 @@ tasks {
         from("LICENSE") {
             rename("LICENSE", licenseName)
         }
+        from("README.md") {
+            rename("README.md", "README_$archivesBaseName.md")
+        }
 
         // Include launcher classes
         from(launcher.output)

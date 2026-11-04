@@ -59,7 +59,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          notes="Automated build from commit \`${GITHUB_SHA}\` on branch \`${GITHUB_REF_NAME}\`."
+          notes="Automated build from commit \`${GITHUB_SHA}\` on branch \`${GITHUB_REF_NAME}\`.
+
+          Unofficial Meteor Client fork, licensed under GNU GPLv3.
+          [Complete source and build scripts](https://github.com/${GITHUB_REPOSITORY}/archive/${GITHUB_SHA}.tar.gz); [License and credits](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/README.md#license-and-credits).
+          Build with Java 25 and \`./gradlew build\`."
 
           if gh release view latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/latest" \
