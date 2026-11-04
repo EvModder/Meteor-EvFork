@@ -7,7 +7,7 @@
 
 <div align="center">
     <img src="https://img.shields.io/github/languages/code-size/EvModder/Meteor-EvFork" alt="GitHub code size in bytes"/>
-    <img src="https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/EvModder/Meteor-EvFork/badge?filter=.java$&label=lines%20of%20code&color=blue" alt="GitHub lines of code"/>
+    <img src="https://img.shields.io/endpoint?url=https://ghloc.dev/api/EvModder/Meteor-EvFork/badge?filter=.java$&label=lines%20of%20code&color=blue" alt="GitHub lines of code"/>
 </div>
 
 A fork of [meteor-client](https://github.com/MeteorDevelopment/meteor-client) for Minecraft 26.3 by [EvModder](https://github.com/EvModder). Not an official Meteor release.<br>For usage and documentation, see the [upstream README](https://github.com/MeteorDevelopment/meteor-client#readme).<br>Licensed under [GNU GPLv3](LICENSE), inherited from upstream.
