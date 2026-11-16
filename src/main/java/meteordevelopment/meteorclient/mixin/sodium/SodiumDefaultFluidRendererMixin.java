@@ -6,7 +6,6 @@
 package meteordevelopment.meteorclient.mixin.sodium;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.render.Xray;
 import net.caffeinemc.mods.sodium.client.model.color.ColorProvider;
@@ -67,8 +66,11 @@ public abstract class SodiumDefaultFluidRendererMixin {
     }
 
     @ModifyReturnValue(method = "isFullBlockFluidSideVisible", at = @At("RETURN"))
-    private boolean onIsFullBlockFluidSideVisible(boolean original, BlockGetter view, BlockPos selfPos, Direction facing, FluidState fluid, @Local(name = "otherState") BlockState otherState) {
+    private boolean onIsFullBlockFluidSideVisible(boolean original, BlockGetter view, BlockPos selfPos, Direction facing, FluidState fluid) {
         if (original || !forceXrayFluidSides || facing.getAxis().isVertical()) return original;
+
+        // Looked up directly: capturing Sodium's local breaks across Sodium builds (VerifyError on 0.9.3-beta.5)
+        BlockState otherState = view.getBlockState(selfPos.relative(facing));
         if (!xray.isBlocked(otherState.getBlock(), null)) return false;
 
         return !otherState.getFluidState().getType().isSame(fluid.getType());
